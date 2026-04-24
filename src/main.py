@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from elevenlabs import ElevenLabs
 
 
-from src.settings import settings
+from settings import settings
 
 load_dotenv()
 
