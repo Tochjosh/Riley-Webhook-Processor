@@ -20,6 +20,7 @@ async def main(context):
 
     payload = req.body_binary
     signature = req.headers.get("elevenlabs-signature")
+    log(req.headers.get("elevenlabs-signature"))
 
     if not signature:
         error("Missing signature header")
