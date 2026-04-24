@@ -45,9 +45,10 @@ async def main(context):
         try:
             await client.post(
                 FORWARD_URL,
-                json={"body": {"data": event.get("data")}},
+                json=event,
             )
-
+            log(event)
+            
         except httpx.RequestError as e:
             error(f"Failed to forward webhook: {str(e)}")
             return res.json({"error": "Forwarding failed"}, 500)
