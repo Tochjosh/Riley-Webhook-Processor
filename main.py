@@ -59,4 +59,4 @@ async def main(context):
             error(f"Failed to forward webhook: {str(e)}")
             return res.json({"error": "Forwarding failed"}, 500)
 
-    return res.json({"status": "success"})
+    return res.json({"status": "success"}, 200)
