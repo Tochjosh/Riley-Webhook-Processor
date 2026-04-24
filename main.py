@@ -37,7 +37,12 @@ settings = get_settings()
 # )
 
 
-def main(req, res, log, error):
+def main(context):
+
+    req = context.req
+    res = context.res
+    log = context.log
+    error = context.error
 
     # payload = req.body
     # signature = req.headers.get("elevenlabs-signature")
