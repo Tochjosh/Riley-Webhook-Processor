@@ -1,67 +1,60 @@
+from h11._abnf import status_code
 import os
-import functools
-
 from dotenv import load_dotenv
+import httpx
 from elevenlabs import ElevenLabs
 
 load_dotenv()
 
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
+FORWARD_URL = "https://peach.app.n8n.cloud/webhook/ai-receptionist/post-call"
 
-class Settings:
-    ELEVENLABS_API_KEY: str | None
-    WEBHOOK_SECRET: str | None
-    ELEVENLABS_API_KEY: str | None
+client = httpx.AsyncClient(timeout=5.0)
 
-    def __init__(self):
-        self.WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
-        self.ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-
-    def validate(self):
-        if not self.WEBHOOK_SECRET:
-            raise ValueError("WEBHOOK_SECRET is not set")
-        if not self.ELEVENLABS_API_KEY:
-            raise ValueError("ELEVENLABS_API_KEY is not set")
+elevenlabs = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 
 
-@functools.lru_cache()
-def get_settings() -> Settings:
-    settings = Settings()
-    # settings.validate()
-    return settings
-
-
-settings = get_settings()
-
-# elevenlabs = ElevenLabs(
-#     api_key=settings.ELEVENLABS_API_KEY,
-# )
-
-
-def main(context):
-
+async def main(context):
     req = context.req
     res = context.res
     log = context.log
     error = context.error
 
-    # payload = req.body
-    # signature = req.headers.get("elevenlabs-signature")
-    # try:
-    #     event = elevenlabs.webhooks.construct_event(
-    #         rawBody=payload.decode("utf-8"),
-    #         sig_header=signature,
-    #         secret=settings.WEBHOOK_SECRET,
-    #     )
-    # except Exception as e:
-    #     return res.json({
-    #         "error": "Invalid signature"
-    #     }, 401)
-    # if event.get("type") == "post_call_transcription":
-    #     print(f"Received transcription: {event.get('data')}")
-    return res.json(
-        {
-            "message": "Function is running",
-            "method": req.method,
-            "path": req.path,
-        }
-    )
+    payload = req.body
+    signature = req.headers.get("elevenlabs-signature")
+
+    if not signature:
+        error("Missing signature header")
+        return res.json({"error": "Missing signature"}, 400)
+
+    try:
+        raw_body = (
+            payload.decode("utf-8") if isinstance(payload, bytes) else payload
+        )
+
+        event = elevenlabs.webhooks.construct_event(
+            rawBody=raw_body,
+            sig_header=signature,
+            secret=WEBHOOK_SECRET,
+        )
+    except Exception as e:
+        error(f"Signature verification failed: {str(e)}")
+        return res.json({"error": "Invalid signature"}, 401)
+
+    event_type = event.get("type")
+    log(f"Received event: {event_type}")
+
+    if event_type == "post_call_transcription":
+        try:
+            response = await client.post(
+                FORWARD_URL,
+                json={"body": {"data": event.get("data")}},
+            )
+            log(f"Forwarded to n8n, status={response.status_code}")
+
+        except httpx.RequestError as e:
+            error(f"Failed to forward webhook: {str(e)}")
+            return res.json({"error": "Forwarding failed"}, 500)
+
+    return res.json({"status": "success"})
