@@ -2,13 +2,17 @@ from dotenv import load_dotenv
 from elevenlabs import ElevenLabs
 
 
-from settings import settings
+from src.settings import settings
 
 load_dotenv()
 
 
 def main(req, res, log, error):
-    return res.json({"Request": req})
+    return res.json({
+    "message": "Function is running",
+    "method": req.method,
+    "path": req.path
+})
 
 
 elevenlabs = ElevenLabs(
