@@ -44,11 +44,10 @@ async def main(context):
 
     if event_type == "post_call_transcription":
         try:
-            response = await client.post(
+            await client.post(
                 FORWARD_URL,
                 json={"body": {"data": event.get("data")}},
             )
-            log(f"Forwarded to n8n, status={response.status_code}")
 
         except httpx.RequestError as e:
             error(f"Failed to forward webhook: {str(e)}")
