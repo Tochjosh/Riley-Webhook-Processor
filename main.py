@@ -47,7 +47,6 @@ async def main(context):
                 FORWARD_URL,
                 json=event,
             )
-            log(event)
             
         except httpx.RequestError as e:
             error(f"Failed to forward webhook: {str(e)}")
