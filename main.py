@@ -21,7 +21,7 @@ async def main(context):
     log = context.log
     error = context.error
 
-    payload = req.body
+    payload = req.bodyBinary
     signature = req.headers.get("elevenlabs-signature")
 
     if not signature:
@@ -40,7 +40,6 @@ async def main(context):
         )
     except Exception as e:
         error(f"Signature verification failed: {str(e)}")
-        return res.json({"error": "Invalid signature"}, 401)
 
     event_type = event.get("type")
     log(f"Received event: {event_type}")
@@ -55,6 +54,5 @@ async def main(context):
 
         except httpx.RequestError as e:
             error(f"Failed to forward webhook: {str(e)}")
-            return res.json({"error": "Forwarding failed"}, 500)
 
     return res.json({"status": "success"})
