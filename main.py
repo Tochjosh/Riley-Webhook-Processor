@@ -18,7 +18,7 @@ async def main(context):
     log = context.log
     error = context.error
 
-    payload = req.bodyBinary
+    payload = req.body_binary
     signature = req.headers.get("elevenlabs-signature")
 
     if not signature:
