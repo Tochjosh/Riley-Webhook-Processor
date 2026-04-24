@@ -23,7 +23,7 @@ class Settings:
 @functools.lru_cache()
 def get_settings() -> Settings:
     settings = Settings()
-    settings.validate()
+    # settings.validate()
     return settings
 
 settings = get_settings()
