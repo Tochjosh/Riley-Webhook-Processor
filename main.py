@@ -1,13 +1,10 @@
-from h11._abnf import status_code
 import os
-from dotenv import load_dotenv
 import httpx
 from elevenlabs import ElevenLabs
 
-load_dotenv()
 
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
+ELEVENLABS_API_KEY = os.environ["ELEVENLABS_API_KEY"]
+WEBHOOK_SECRET = os.environ["WEBHOOK_SECRET"]
 FORWARD_URL = "https://peach.app.n8n.cloud/webhook/ai-receptionist/post-call"
 
 client = httpx.AsyncClient(timeout=5.0)
