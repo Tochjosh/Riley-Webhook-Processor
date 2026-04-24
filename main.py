@@ -19,13 +19,7 @@ async def main(context):
     error = context.error
 
     payload = req.body_binary
-    log("headers")
-    log(req.headers)
-    log("payload")
-    log(payload)
     signature = req.headers.get("elevenlabs-signature")
-    log("signature")
-    log(signature)
 
     if not signature:
         error("Missing signature header")
@@ -46,7 +40,6 @@ async def main(context):
         return res.json({"error": "Invalid signature"}, 401)
 
     event_type = event.get("type")
-    log(f"Received event: {event_type}")
 
     if event_type == "post_call_transcription":
         try:
