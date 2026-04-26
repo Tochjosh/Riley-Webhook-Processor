@@ -15,8 +15,11 @@ elevenlabs = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 async def main(context):
     req = context.req
     res = context.res
-    log = context.log
+    _ = context.log
     error = context.error
+
+    if req.method != "POST":
+        return res.json({"error": "Invalid method"}, 405)
 
     payload = req.body_binary
     signature = req.headers.get("elevenlabs-signature")
@@ -39,15 +42,13 @@ async def main(context):
         error(f"Signature verification failed: {str(e)}")
         return res.json({"error": "Invalid signature"}, 401)
 
-    event_type = event.get("type")
-
-    if event_type == "post_call_transcription":
+    if event.get("type") == "post_call_transcription":
         try:
             await client.post(
                 FORWARD_URL,
                 json=event,
             )
-            
+
         except httpx.RequestError as e:
             error(f"Failed to forward webhook: {str(e)}")
             return res.json({"error": "Forwarding failed"}, 500)
